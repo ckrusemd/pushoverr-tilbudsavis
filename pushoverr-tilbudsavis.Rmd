@@ -86,8 +86,7 @@ message(msg)
 
 
 ```{r}
-
-  df_query = httr::POST( 
+df_query = httr::POST( 
     url = "https://api.openai.com/v1/chat/completions", 
     httr::add_headers(
       `Content-Type` = "application/json", 
@@ -97,7 +96,7 @@ message(msg)
       model = "gpt-3.5-turbo",
       messages = list(
         list(role="system",content="You are a shopping assistant planning today's grocery purchases."),
-        list(role="user",content=glue("You will be provided a table of shopping offers. Prioritize the best deals if I want to buy: 1) Skyr, not yoghurt skyr, 2) Tuna, the cheapest per amount, 3) Sodavand, particularly Coca Cola Zero or Faxe Kondi Free, t least 1 liter 4) Yoggi yoghurt, 5) Pizzabund, 6) Philadelphia. List in the format of 1) The Store's name, 2) Bullet-points of the item name, the price. Compile offers from the same store into the same group. Do not write any introducing or conclusion text. Prioritize Coop365, Netto, Rema1000, Føtex. Keep under 1024 characters.\n\n{msg}"))
+        list(role="user",content=glue("You will be provided a table of shopping offers. Do not write any introducing or conclusion text. Prioritize Coop365, Netto, Rema1000, Føtex. You must keep under 1024 characters. Prioritize the best deals if I want to buy: 1) Skyr, not yoghurt skyr, 2) Tuna, the cheapest per amount, 3) Sodavand, particularly Coca Cola Zero or Faxe Kondi Free, t least 1 liter 4) Yoggi yoghurt, 5) Pizzabund, 6) Philadelphia. List in the format of 1) The Store's name, 2) Bullet-points of the item name, the price. Compile offers from the same store into the same group. \n\n{msg}"))
       ),
       max_tokens = 1000
     ),encode="json"
@@ -107,6 +106,15 @@ message(msg)
   jsonDataframe = fromJSON(jsonRespText)
   response_message = glue("{jsonDataframe$choices$message$content}\n\n\n")
   cat(response_message)
+```
+
+
+```{r}
+message(nchar(response_message))
+```
+
+
+```{r}
 message(response_message)
 ```
 
