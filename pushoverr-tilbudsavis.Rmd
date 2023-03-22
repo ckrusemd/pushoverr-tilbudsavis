@@ -1,0 +1,118 @@
+---
+title: "Pushoverr eTilbudsavis"
+author: "Christian Kruse"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r include=FALSE}
+knitr::opts_chunk$set(echo = FALSE,message = FALSE,warning = FALSE)
+options(scipen=999)
+```
+
+# Pushoverr eTilbudsavis
+
+```{r}
+
+if (!require(pacman)) { install.packages("pacman") }
+pacman::p_load(pushoverr,
+               dplyr,
+               tidyr,
+               lubridate,
+               scales,
+               httr,
+               ggplot2,
+               rPref,
+               jsonlite,
+               glue)
+
+```
+
+
+```{r warning=FALSE,message=FALSE,include=FALSE}
+readRenviron(path = "Renviron.site")
+pushoverr::set_pushover_app(token = Sys.getenv("PUSHOVER_APPKEY"))
+pushoverr::set_pushover_user(user = Sys.getenv("PUSHOVER_USERKEY"))
+key_chatgpt = Sys.getenv("CHATGPTAPIKEY")
+
+
+```
+
+```{r}
+
+keywords = c("cheasy skyr","stay strong","tun","cola","philadelphia","laks","hakket oksekød")
+
+df_etilbudsavisen = do.call("rbind",lapply(keywords,function (keyword) {
+  message(keyword)
+  url = glue("https://etilbudsavis.dk/api/squid/v2/offers/search?query={keyword}&r_lat=55.7715601&r_lng=12.4943525&r_radius=30000&r_locale=da_DK&limit=100&offset=0")
+  api_url = utils::URLencode(url)
+  api_result = httr::GET(api_url)
+  api_json = rawToChar(api_result$content)
+  result = jsonlite::fromJSON(api_json)
+  
+  temp_df = result %>% 
+    dplyr::select(heading,description,run_from,run_till,pricing) %>% 
+    unnest_wider(pricing) %>% 
+    dplyr::select(-pre_price,-currency) 
+  
+  dealer_dictionary = result$dealer %>% dplyr::select(name) 
+  quantity_dictionary_unit = result$quantity$unit$symbol
+  quantity_dictionary_size = result$quantity$size$to
+  
+  temp_df %>% 
+    bind_cols(dealer_dictionary) %>% 
+    dplyr::mutate(size=quantity_dictionary_size,
+                  unit=quantity_dictionary_unit) %>% 
+    dplyr::mutate(run_from=ymd(substr(run_from,start = 1,stop = 10))) %>% 
+    dplyr::mutate(run_till=ymd(substr(run_till,start = 1,stop = 10))) %>% 
+    filter(run_from<=Sys.Date()) %>% 
+    filter(run_till>=Sys.Date())
+})) %>% 
+  distinct() %>%
+  dplyr::select(-run_from,-run_till) %>% 
+  unite(size,size,unit,sep = " ")
+
+```
+
+```{r}
+msg = df_etilbudsavisen %>% 
+  # dplyr::mutate(text=glue("STORE: {name}, DESCRIPTION: {heading}, AMOUNT: {size}, PRICE: {price}")) %>% 
+  dplyr::mutate(text=glue("{name}: {heading}, {price} kr.,{size}")) %>% 
+  pull(text) %>% 
+  paste(.,collapse="\n")
+
+```
+
+
+```{r}
+
+  df_query = httr::POST( 
+    url = "https://api.openai.com/v1/chat/completions", 
+    httr::add_headers(
+      `Content-Type` = "application/json", 
+      `Authorization` = glue("Bearer {key_chatgpt}")
+    ),
+    body = list(
+      model = "gpt-3.5-turbo",
+      messages = list(
+        list(role="system",content="You are a shopping assistant planning today's grocery purchases."),
+        list(role="user",content=glue("You will be provided a table of shopping offers. Prioritize the best deals if I want to buy: 1) Skyr, not yoghurt skyr, 2) Tuna, the cheapest per amount, 3) Sodavand, particularly Coca Cola Zero or Faxe Kondi Free, t least 1 liter 4) Yoggi yoghurt, 5) Pizzabund, 6) Philadelphia. List in the format of 1) The Store's name, 2) Bullet-points of the item name, the price. Compile offers from the same store into the same group. Do not write any introducing or conclusion text. Prioritize Coop365, Netto, Rema1000, Føtex. Keep under 1024 characters.\n\n{msg}"))
+      ),
+      max_tokens = 1000
+    ),encode="json"
+  )
+
+  jsonRespText = content(df_query,as="text",encoding = "UTF-8") 
+  jsonDataframe = fromJSON(jsonRespText)
+  response_message = glue("{jsonDataframe$choices$message$content}\n\n\n")
+  cat(response_message)
+```
+
+
+```{r}
+
+pushoverr::pushover(message = response_message)
+
+```
+
+
