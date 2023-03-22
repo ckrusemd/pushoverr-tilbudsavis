@@ -80,6 +80,7 @@ msg = df_etilbudsavisen %>%
   dplyr::mutate(text=glue("{name}: {heading}, {price} kr.,{size}")) %>% 
   pull(text) %>% 
   paste(.,collapse="\n")
+message(msg)
 
 ```
 
@@ -106,6 +107,7 @@ msg = df_etilbudsavisen %>%
   jsonDataframe = fromJSON(jsonRespText)
   response_message = glue("{jsonDataframe$choices$message$content}\n\n\n")
   cat(response_message)
+message(response_message)
 ```
 
 
