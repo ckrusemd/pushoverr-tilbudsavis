@@ -40,7 +40,18 @@ key_chatgpt = Sys.getenv("CHATGPTAPIKEY")
 
 ```{r}
 
-keywords = c("cheasy skyr","stay strong","tun","cola","hakket oksekød")
+keywords = c("skyr",
+             # "yoghurt",
+             "tun",
+             "cola"#,
+             # "oksekød",
+             # "pizza",
+             # "rugbrød",
+             # "slik",
+             # "pølser",
+             # "kaffe",
+             # "laks"
+             )
 
 df_etilbudsavisen = do.call("rbind",lapply(keywords,function (keyword) {
   message(keyword)
@@ -66,14 +77,29 @@ df_etilbudsavisen = do.call("rbind",lapply(keywords,function (keyword) {
     dplyr::mutate(run_from=ymd(substr(run_from,start = 1,stop = 10))) %>% 
     dplyr::mutate(run_till=ymd(substr(run_till,start = 1,stop = 10))) %>% 
     filter(run_from<=Sys.Date()) %>% 
-    filter(run_till>=Sys.Date())
+    filter(run_till>=Sys.Date()) %>% 
+    filter(!name %in% c("Harald Nyborg","Kop & Kande","Elgiganten","Lidl","Min Købmand","Imerco","Skousen","LET-KØB")) %>% 
+    dplyr::mutate(name=recode(name,
+                              "føtex"="F",
+                              "Netto"="N",
+                              "Irma"="I",
+                              "Coop365"="C",
+                              "MENY"="M",
+                              "SuperBrugsen"="SB",
+                              "Kvickly"="K",
+                              "Bilka"="B",
+                              "REMA 1000"="R",
+                              "Harald Nyborg"="HN",
+                              "Dagli'Brugsen"="DB",
+                              "SPAR"="S"))
 })) %>% 
   distinct() %>%
-  filter(name %in% c("Netto","føtex","MENY","Coop365","REMA 1000","Bilka")) %>% 
   dplyr::select(-run_from,-run_till) %>% 
   unite(size,size,unit,sep = " ")
 
 ```
+
+# By store
 
 ```{r}
 msg = df_etilbudsavisen %>% 
@@ -81,12 +107,38 @@ msg = df_etilbudsavisen %>%
   dplyr::mutate(text=glue("{name}: {heading}, {price} kr.,{size}")) %>% 
   pull(text) %>% 
   paste(.,collapse="\n")
-msg = glue("You will be provided a table of shopping offers. Do not write any introducing or conclusion text. You must keep under 1024 characters. List the best deals if I want to buy: 1) Skyr, not yoghurt skyr, 2) Tuna, the cheapest per amount, 3) Sodavand, particularly Coca Cola Zero or Faxe Kondi Free, t least 1 liter 4) Yoggi yoghurt, 5) Pizzabund, 6) Philadelphia. List in the format of 1) The Store's name, 2) Bullet-points of the item name, the price. Compile offers from the same store into the same group. \n\n{msg}")
+msg = glue("
+           You are an expert in examining shopping deals.
+           You will be provided a table of shopping offers in this format: 
+           1) Store (F = Føtex, N = Netto, C = Coop365, M = Meny, SB = SuperBrugsen, K = Kvickly, B = Bilka, S = Spar), 
+           2) Heading, 
+           3) Price in Danish kroner, 
+           4) Size. 
+           
+           List in bullet-point format all deals in the order of:
+           1) The store, writing out the full name from the abbreviation, 
+           2) Sub-bullet-points of each offer in the format of Topic: Item Name, Price, Content.  
+           
+           An example would be:
+            Netto:
+            - Skyr, 1000g, 20 kr.
+            - Tun, 140g, 12 kr.
+           
+           Do not write any introducing or conclusion text. 
+           
+           The topics area:
+           1) Skyr
+           2) Tuna
+           3) Sodavand
+           
+           {msg}")
 msg
 ```
 
+# API
 
 ```{r}
+
 df_query = httr::POST( 
     url = "https://api.openai.com/v1/chat/completions", 
     httr::add_headers(
@@ -121,9 +173,7 @@ message(response_message)
 
 
 ```{r}
-
-pushoverr::pushover(message = response_message)
-
+pushoverr::pushover(message = substr(response_message,1,1024))
 ```
 
 
