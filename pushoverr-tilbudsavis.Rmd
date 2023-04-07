@@ -1,5 +1,5 @@
 ---
-title: "Pushoverr eTilbudsavis"
+title: "Tilbudsavis - ChatGPT Prompts"
 author: "Christian Kruse"
 date: "`r Sys.Date()`"
 output: html_document
@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = FALSE,message = FALSE,warning = FALSE)
 options(scipen=999)
 ```
 
-# Pushoverr eTilbudsavis
+# Tilbudsavis - ChatGPT Prompts
 
 ```{r}
 
@@ -31,30 +31,40 @@ pacman::p_load(pushoverr,
 
 ```{r warning=FALSE,message=FALSE,include=FALSE}
 readRenviron(path = "Renviron.site")
-pushoverr::set_pushover_app(token = Sys.getenv("PUSHOVER_APPKEY"))
-pushoverr::set_pushover_user(user = Sys.getenv("PUSHOVER_USERKEY"))
-key_chatgpt = Sys.getenv("CHATGPTAPIKEY")
-
-
 ```
 
 ```{r}
 
 keywords = c("skyr",
-             # "yoghurt",
+             "yoghurt",
              "tun",
-             "cola"#,
-             # "oksekød",
-             # "pizza",
-             # "rugbrød",
-             # "slik",
-             # "pølser",
-             # "kaffe",
-             # "laks"
+             "cola",
+             "pepsi",
+             "oksekød",
+             "pizza",
+             "rugbrød",
+             "slik",
+             "pølser",
+             "lego",
+             "lotus",
+             "vitamin",
+             "legetøj",
+             # "ninjago",
+             "pølser",
+             "switch",
+             "playstation",
+             "ps5",
+             "chokolade",
+             "opbevaring",
+             "tandpasta",
+             "neutral",
+             "slik",
+             "kaffe",
+             "laks"
              )
 
 df_etilbudsavisen = do.call("rbind",lapply(keywords,function (keyword) {
-  message(keyword)
+  # message(keyword)
   url = glue("https://etilbudsavis.dk/api/squid/v2/offers/search?query={keyword}&r_lat=55.7715601&r_lng=12.4943525&r_radius=30000&r_locale=da_DK&limit=100&offset=0")
   api_url = utils::URLencode(url)
   api_result = httr::GET(api_url)
@@ -78,7 +88,7 @@ df_etilbudsavisen = do.call("rbind",lapply(keywords,function (keyword) {
     dplyr::mutate(run_till=ymd(substr(run_till,start = 1,stop = 10))) %>% 
     filter(run_from<=Sys.Date()) %>% 
     filter(run_till>=Sys.Date()) %>% 
-    filter(!name %in% c("Harald Nyborg","Kop & Kande","Elgiganten","Lidl","Min Købmand","Imerco","Skousen","LET-KØB")) %>% 
+    # filter(!name %in% c("Harald Nyborg","Kop & Kande","Elgiganten","Lidl","Min Købmand","Imerco","Skousen","LET-KØB")) %>% 
     dplyr::mutate(name=recode(name,
                               "føtex"="F",
                               "Netto"="N",
@@ -91,7 +101,8 @@ df_etilbudsavisen = do.call("rbind",lapply(keywords,function (keyword) {
                               "REMA 1000"="R",
                               "Harald Nyborg"="HN",
                               "Dagli'Brugsen"="DB",
-                              "SPAR"="S"))
+                              "SPAR"="S"),
+                  keyword=keyword)
 })) %>% 
   distinct() %>%
   dplyr::select(-run_from,-run_till) %>% 
@@ -99,15 +110,8 @@ df_etilbudsavisen = do.call("rbind",lapply(keywords,function (keyword) {
 
 ```
 
-# By store
-
 ```{r}
-msg = df_etilbudsavisen %>% 
-  # dplyr::mutate(text=glue("STORE: {name}, DESCRIPTION: {heading}, AMOUNT: {size}, PRICE: {price}")) %>% 
-  dplyr::mutate(text=glue("{name}: {heading}, {price} kr.,{size}")) %>% 
-  pull(text) %>% 
-  paste(.,collapse="\n")
-msg = glue("
+common_intro = glue("
            You are an expert in examining shopping deals.
            You will be provided a table of shopping offers in this format: 
            1) Store (F = Føtex, N = Netto, C = Coop365, M = Meny, SB = SuperBrugsen, K = Kvickly, B = Bilka, S = Spar), 
@@ -126,54 +130,50 @@ msg = glue("
            
            Do not write any introducing or conclusion text. 
            
-           The topics area:
-           1) Skyr
-           2) Tuna
-           3) Sodavand
-           
-           {msg}")
+           The topics are:\n\n")
+```
+
+# Skyr
+
+```{r}
+msg = df_etilbudsavisen %>% 
+  filter(keyword=="skyr") %>% 
+  dplyr::mutate(text=glue("{name}: {heading}, {description},{price} kr.,{size}")) %>% 
+  pull(text) %>% 
+  paste(.,collapse="\n")
+msg = glue("{common_intro}",
+           "1) Skyr",
+           "\n\n{msg}")
 msg
 ```
 
-# API
+# Legetøj
+
+```{r}
+msg = df_etilbudsavisen %>% 
+  filter(keyword %in% c("lego","legetøj","switch","ps5","playstation")) %>% 
+  dplyr::mutate(text=glue("{name}: {heading}, {description},{price} kr.,{size}")) %>% 
+  pull(text) %>% 
+  paste(.,collapse="\n")
+msg = glue("{common_intro}",
+           "1) Legetøj, gaming, nintendo, switch, playstation",
+           "\n\n{msg}")
+msg
+```
+
+# Oksekød
 
 ```{r}
 
-df_query = httr::POST( 
-    url = "https://api.openai.com/v1/chat/completions", 
-    httr::add_headers(
-      `Content-Type` = "application/json", 
-      `Authorization` = glue("Bearer {key_chatgpt}")
-    ),
-    body = list(
-      model = "gpt-3.5-turbo",
-      messages = list(
-        list(role="system",content="You are a shopping assistant planning today's grocery purchases."),
-        list(role="user",content=msg)
-      ),
-      max_tokens = 4097-nchar(msg)
-    ),encode="json"
-  )
+msg = df_etilbudsavisen %>% 
+  filter(keyword %in% c("oksekød")) %>% 
+  dplyr::mutate(text=glue("{name}: {heading}, {description},{price} kr.,{size}")) %>% 
+  pull(text) %>% 
+  paste(.,collapse="\n")
+msg = glue("{common_intro}",
+           "1) Oksekød",
+           "\n\n{msg}")
+msg
 
-  jsonRespText = content(df_query,as="text",encoding = "UTF-8") 
-  jsonDataframe = fromJSON(jsonRespText)
-  response_message = glue("{jsonDataframe$choices$message$content}\n\n\n")
-  cat(response_message)
+
 ```
-
-
-```{r}
-message(nchar(response_message))
-```
-
-
-```{r}
-message(response_message)
-```
-
-
-```{r}
-pushoverr::pushover(message = substr(response_message,1,1024))
-```
-
-
