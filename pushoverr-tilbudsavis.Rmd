@@ -135,7 +135,7 @@ common_intro = glue("
 
 # Skyr
 
-```{r}
+```{r results="asis}
 msg = df_etilbudsavisen %>% 
   filter(keyword=="skyr") %>% 
   dplyr::mutate(text=glue("{name}: {heading}, {description},{price} kr.,{size}")) %>% 
@@ -149,7 +149,7 @@ msg
 
 # Legetøj
 
-```{r}
+```{r results="asis}
 msg = df_etilbudsavisen %>% 
   filter(keyword %in% c("lego","legetøj","switch","ps5","playstation")) %>% 
   dplyr::mutate(text=glue("{name}: {heading}, {description},{price} kr.,{size}")) %>% 
@@ -163,7 +163,7 @@ msg
 
 # Oksekød
 
-```{r}
+```{r results="asis}
 
 msg = df_etilbudsavisen %>% 
   filter(keyword %in% c("oksekød")) %>% 
