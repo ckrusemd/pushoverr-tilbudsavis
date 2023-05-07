@@ -37,6 +37,7 @@ readRenviron(path = "Renviron.site")
 
 keywords = c("skyr",
              "yoghurt",
+             "bilka",
              "tun",
              "cola",
              "pepsi",
@@ -64,7 +65,8 @@ keywords = c("skyr",
              )
 
 df_etilbudsavisen = do.call("rbind",lapply(keywords,function (keyword) {
-  # message(keyword)
+  message(keyword)
+  tryCatch(expr = {
   url = glue("https://etilbudsavis.dk/api/squid/v2/offers/search?query={keyword}&r_lat=55.7715601&r_lng=12.4943525&r_radius=30000&r_locale=da_DK&limit=100&offset=0")
   api_url = utils::URLencode(url)
   api_result = httr::GET(api_url)
@@ -103,8 +105,12 @@ df_etilbudsavisen = do.call("rbind",lapply(keywords,function (keyword) {
                               "Dagli'Brugsen"="DB",
                               "SPAR"="S"),
                   keyword=keyword)
+    
+  },error=function(e) {
+    data.frame()
+  })
 })) %>% 
-  distinct() %>%
+  distinct() %>% 
   dplyr::select(-run_from,-run_till) %>% 
   unite(size,size,unit,sep = " ")
 
@@ -177,3 +183,42 @@ msg
 
 
 ```
+
+# Bilka ToGo
+
+```{r}
+
+msg = df_etilbudsavisen %>% 
+  filter(name=="B") %>% 
+  dplyr::mutate(text=glue("{heading}; {description},{price} kr.,{size}")) %>% 
+  pull(text) %>% 
+  paste(.,collapse="\n")
+
+bilka_intro = glue("
+           You are an expert in examining shopping deals.
+           You will be provided as lines of shopping offers each in this format: 
+           - Title; Description; Price in Danish kroner; Size. 
+           
+           Please propose a shopping list for a family.
+           The list should be separated into:
+           1) Food
+           2) Necessities
+           3) Child-oriented offers
+           4) Treats
+           
+           List in bullet-point format all relevant deals in the order of:
+           1) Each relevant offer with amount to buy in the format of Topic: Item Name, Price, Content.  
+           
+           An example would be:
+            - Skyr, 1000g, 20 kr., 4 units
+            - Tun, 140g, 12 kr., 3 units
+           
+           Do not write any introducing or conclusion text. 
+           
+           The deals are:\n\n")
+msg = glue("{bilka_intro}",
+           "\n\n{msg}")
+msg
+
+```
+
