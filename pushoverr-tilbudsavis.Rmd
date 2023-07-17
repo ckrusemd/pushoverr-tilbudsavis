@@ -91,6 +91,7 @@ df_etilbudsavisen = do.call("rbind",lapply(keywords,function (keyword) {
     filter(run_from<=Sys.Date()) %>% 
     filter(run_till>=Sys.Date()) %>% 
     # filter(!name %in% c("Harald Nyborg","Kop & Kande","Elgiganten","Lidl","Min Købmand","Imerco","Skousen","LET-KØB")) %>% 
+    dplyr::mutate(name_full=name) %>% 
     dplyr::mutate(name=recode(name,
                               "føtex"="F",
                               "Netto"="N",
@@ -111,10 +112,19 @@ df_etilbudsavisen = do.call("rbind",lapply(keywords,function (keyword) {
   })
 })) %>% 
   distinct() %>% 
-  dplyr::select(-run_from,-run_till) %>% 
+  # dplyr::select(-run_from,-run_till) %>% 
   unite(size,size,unit,sep = " ")
 
 ```
+
+```{r}
+df_etilbudsavisen %>% DT::datatable(.,filter="top")
+```
+
+```{r}
+openxlsx::write.xlsx(x = df_etilbudsavisen,file = "df_etilbudsavisen.xlsx")
+```
+
 
 ```{r}
 common_intro = glue("
@@ -190,16 +200,16 @@ msg
 
 msg = df_etilbudsavisen %>% 
   filter(name=="B") %>% 
-  dplyr::mutate(text=glue("{heading}; {description},{price} kr.,{size}")) %>% 
+  dplyr::mutate(text=glue("{heading}; {price} kr.; {size}")) %>% 
   pull(text) %>% 
   paste(.,collapse="\n")
 
 bilka_intro = glue("
            You are an expert in examining shopping deals.
            You will be provided as lines of shopping offers each in this format: 
-           - Title; Description; Price in Danish kroner; Size. 
+           - Title; Price in Danish kroner; Size. 
            
-           Please propose a shopping list for a family.
+           Please propose a shopping list for a family to have breakfast, lunch, and dinners for 14 days.
            The list should be separated into:
            1) Food
            2) Necessities
