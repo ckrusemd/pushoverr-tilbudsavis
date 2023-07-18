@@ -2,7 +2,9 @@
 title: "Tilbudsavis - ChatGPT Prompts"
 author: "Christian Kruse"
 date: "`r Sys.Date()`"
-output: html_document
+output:
+  html_document:
+    css: style.css
 ---
 
 div.main-container {
