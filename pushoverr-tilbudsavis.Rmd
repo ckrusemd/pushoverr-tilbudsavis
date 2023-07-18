@@ -114,123 +114,43 @@ df_etilbudsavisen = do.call("rbind",lapply(keywords,function (keyword) {
   })
 })) %>% 
   distinct() %>% 
-  # dplyr::select(-run_from,-run_till) %>% 
-  unite(size,size,unit,sep = " ")
-
+  # dplyr::select(-run_from,-run_till) %>%  
+  dplyr::mutate(size_converted=case_when(unit=="g"~size*1,
+                                         unit=="kg"~size*1000,
+                                         unit=="l"~size*1000,
+                                         unit=="cl"~size*10,
+                                         unit=="ml"~size*1,
+                                         TRUE~as.numeric(NA))) %>% 
+  dplyr::mutate(price_per_kg=price/(size_converted/1000)) %>% 
+  dplyr::mutate(price_per_kg=round(price_per_kg,1)) %>% 
+  unite(size,size,unit,sep = " ") 
+  
+  df_etilbudsavisen
 ```
+
 
 ```{r}
 df_etilbudsavisen %>% DT::datatable(.,filter="top")
 ```
 
 ```{r}
-openxlsx::write.xlsx(x = df_etilbudsavisen,file = "df_etilbudsavisen.xlsx")
-```
-
-
-```{r}
-common_intro = glue("
-           You are an expert in examining shopping deals.
-           You will be provided a table of shopping offers in this format: 
-           1) Store (F = Føtex, N = Netto, C = Coop365, M = Meny, SB = SuperBrugsen, K = Kvickly, B = Bilka, S = Spar), 
-           2) Heading, 
-           3) Price in Danish kroner, 
-           4) Size. 
-           
-           List in bullet-point format all deals in the order of:
-           1) The store, writing out the full name from the abbreviation, 
-           2) Sub-bullet-points of each offer in the format of Topic: Item Name, Price, Content.  
-           
-           An example would be:
-            Netto:
-            - Skyr, 1000g, 20 kr.
-            - Tun, 140g, 12 kr.
-           
-           Do not write any introducing or conclusion text. 
-           
-           The topics are:\n\n")
+openxlsx::write.xlsx(x = df_etilbudsavisen,file = "_book/df_etilbudsavisen.xlsx")
 ```
 
 # Skyr
 
-```{r results='asis'}
-msg = df_etilbudsavisen %>% 
-  filter(keyword=="skyr") %>% 
-  dplyr::mutate(text=glue("{name}: {heading}, {description},{price} kr.,{size}")) %>% 
-  pull(text) %>% 
-  paste(.,collapse="\n")
-msg = glue("{common_intro}",
-           "1) Skyr",
-           "\n\n{msg}")
-msg
-```
-
-# Legetøj
-
-```{r results='asis'}
-msg = df_etilbudsavisen %>% 
-  filter(keyword %in% c("lego","legetøj","switch","ps5","playstation")) %>% 
-  dplyr::mutate(text=glue("{name}: {heading}, {description},{price} kr.,{size}")) %>% 
-  pull(text) %>% 
-  paste(.,collapse="\n")
-msg = glue("{common_intro}",
-           "1) Legetøj, gaming, nintendo, switch, playstation",
-           "\n\n{msg}")
-msg
+```{r}
+df_etilbudsavisen %>% filter(keyword=="skyr") %>%  DT::datatable(.,filter="top")
 ```
 
 # Oksekød
 
-```{r results='asis'}
-
-msg = df_etilbudsavisen %>% 
-  filter(keyword %in% c("oksekød")) %>% 
-  dplyr::mutate(text=glue("{name}: {heading}, {description},{price} kr.,{size}")) %>% 
-  pull(text) %>% 
-  paste(.,collapse="\n")
-msg = glue("{common_intro}",
-           "1) Oksekød",
-           "\n\n{msg}")
-msg
-
-
+```{r}
+df_etilbudsavisen %>% filter(keyword=="oksekød") %>%  DT::datatable(.,filter="top")
 ```
 
-# Bilka ToGo
+# Sodavand
 
 ```{r}
-
-msg = df_etilbudsavisen %>% 
-  filter(name=="B") %>% 
-  dplyr::mutate(text=glue("{heading}; {price} kr.; {size}")) %>% 
-  pull(text) %>% 
-  paste(.,collapse="\n")
-
-bilka_intro = glue("
-           You are an expert in examining shopping deals.
-           You will be provided as lines of shopping offers each in this format: 
-           - Title; Price in Danish kroner; Size. 
-           
-           Please propose a shopping list for a family to have breakfast, lunch, and dinners for 14 days.
-           The list should be separated into:
-           1) Food
-           2) Necessities
-           3) Child-oriented offers
-           4) Treats
-           
-           List in bullet-point format all relevant deals in the order of:
-           1) Each relevant offer with amount to buy in the format of Topic: Item Name, Price, Content.  
-           
-           An example would be:
-            - Skyr, 1000g, 20 kr., 4 units
-            - Tun, 140g, 12 kr., 3 units
-           
-           Do not write any introducing or conclusion text. 
-           
-           The deals are:\n\n")
-msg = glue("{bilka_intro}",
-           "\n\n{msg}")
-msg
-
+df_etilbudsavisen %>% filter(keyword %in% c("cola","pepsi")) %>%  DT::datatable(.,filter="top")
 ```
-
