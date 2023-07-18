@@ -7,10 +7,6 @@ output:
     css: style.css
 ---
 
-div.main-container {
-  max-width: 1600px !important;
-}
-
 ```{r include=FALSE}
 knitr::opts_chunk$set(echo = FALSE,message = FALSE,warning = FALSE)
 options(scipen=999)
