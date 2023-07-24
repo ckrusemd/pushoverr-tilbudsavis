@@ -26,6 +26,7 @@ pacman::p_load(pushoverr,
                ggplot2,
                rPref,
                jsonlite,
+               DT,
                glue)
 
 ```
@@ -33,6 +34,11 @@ pacman::p_load(pushoverr,
 
 ```{r warning=FALSE,message=FALSE,include=FALSE}
 readRenviron(path = "Renviron.site")
+```
+
+```{r warning=FALSE,message=FALSE,include=FALSE}
+pushoverr::set_pushover_app(token = Sys.getenv("PUSHOVER_APPKEY"))
+pushoverr::set_pushover_user(user = Sys.getenv("PUSHOVER_USERKEY"))
 ```
 
 ```{r}
@@ -56,6 +62,7 @@ keywords = c("skyr",
              "pølser",
              "switch",
              "playstation",
+             "tabs",
              "ps5",
              "chokolade",
              "opbevaring",
@@ -154,3 +161,25 @@ df_etilbudsavisen %>% filter(keyword=="oksekød") %>%  DT::datatable(.,filter="t
 ```{r}
 df_etilbudsavisen %>% filter(keyword %in% c("cola","pepsi")) %>%  DT::datatable(.,filter="top")
 ```
+
+# Pushoverr
+
+```{r}
+pushoverr_string = df_etilbudsavisen %>% 
+  filter(keyword %in% c("skyr","tun","sodavand","oksekød"),
+         name_full %in% c("Coop365","Kvickly","Meny","Netto","føtex","Rema 1000","Bilka")) %>% 
+  dplyr::select(name,heading,price,size) %>% 
+  group_by(name) %>% 
+  dplyr::mutate(label_=paste0(heading,", ",size,"/",scales::number(price,1))) %>% 
+  dplyr::select(name,label_) %>% 
+  dplyr::mutate(text=paste(label_,collapse="\n")) %>% 
+  dplyr::select(name,text) %>% 
+  distinct() %>% 
+  ungroup() %>% 
+  unite(name,name,text,sep = ":\n") %>% 
+  pull(name) %>% 
+  paste0(.,collapse="\n")
+nchar(pushoverr_string)
+pushoverr::pushover(pushoverr_string)
+```
+
