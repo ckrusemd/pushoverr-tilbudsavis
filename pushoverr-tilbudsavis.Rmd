@@ -64,6 +64,7 @@ keywords = c("skyr",
              "playstation",
              "tabs",
              "ps5",
+             "starbucks",
              "chokolade",
              "opbevaring",
              "tandpasta",
@@ -147,19 +148,53 @@ openxlsx::write.xlsx(x = df_etilbudsavisen,file = "_book/df_etilbudsavisen.xlsx"
 # Skyr
 
 ```{r}
-df_etilbudsavisen %>% filter(keyword=="skyr") %>%  DT::datatable(.,filter="top")
+df_etilbudsavisen %>% filter(keyword=="skyr") %>% arrange(price_per_kg) %>%   DT::datatable(.,filter="top")
 ```
 
 # Oksekød
 
 ```{r}
-df_etilbudsavisen %>% filter(keyword=="oksekød") %>%  DT::datatable(.,filter="top")
+df_etilbudsavisen %>% filter(keyword=="oksekød") %>% arrange(price_per_kg) %>%  DT::datatable(.,filter="top")
+```
+# Non-food
+
+```{r}
+df_etilbudsavisen %>% filter(keyword %in% c("neutral","tabs","tandpasta")) %>%  arrange(price_per_kg) %>% DT::datatable(.,filter="top")
+```
+
+# Tun
+
+```{r}
+df_etilbudsavisen %>% filter(keyword %in% c("tun")) %>%  arrange(price_per_kg) %>% DT::datatable(.,filter="top")
+```
+
+# Slik
+
+```{r}
+df_etilbudsavisen %>% filter(keyword %in% c("slik")) %>%  arrange(price_per_kg) %>% DT::datatable(.,filter="top")
+```
+
+# Legetøj
+
+```{r}
+df_etilbudsavisen %>% filter(keyword %in% c("lego","switch","playstation","ps5")) %>%  arrange(price_per_kg) %>% DT::datatable(.,filter="top")
 ```
 
 # Sodavand
 
 ```{r}
-df_etilbudsavisen %>% filter(keyword %in% c("cola","pepsi")) %>%  DT::datatable(.,filter="top")
+df_etilbudsavisen %>% filter(keyword %in% c("cola","pepsi","sodavand")) %>%  arrange(price_per_kg) %>% DT::datatable(.,filter="top")
+```
+# Bilka
+
+```{r}
+df_etilbudsavisen %>% filter(keyword %in% c("bilka")) %>%  arrange(price_per_kg) %>% DT::datatable(.,filter="top")
+```
+
+# Kaffe
+
+```{r}
+df_etilbudsavisen %>% filter(keyword %in% c("kaffe","starbucks")) %>%  arrange(price_per_kg) %>% DT::datatable(.,filter="top")
 ```
 
 # Pushoverr
