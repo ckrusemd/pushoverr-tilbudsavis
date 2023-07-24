@@ -216,6 +216,6 @@ pushoverr_string = df_etilbudsavisen %>%
   paste0(.,collapse="\n")
 nchar(pushoverr_string)
 message(nchar(pushoverr_string))
-pushoverr::pushover(pushoverr_string)
+# pushoverr::pushover(pushoverr_string)
 ```
 
