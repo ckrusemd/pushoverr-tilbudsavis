@@ -39,6 +39,7 @@ readRenviron(path = "Renviron.site")
 ```{r warning=FALSE,message=FALSE,include=FALSE}
 pushoverr::set_pushover_app(token = Sys.getenv("PUSHOVER_APPKEY"))
 pushoverr::set_pushover_user(user = Sys.getenv("PUSHOVER_USERKEY"))
+pushover("hej")
 ```
 
 ```{r}
