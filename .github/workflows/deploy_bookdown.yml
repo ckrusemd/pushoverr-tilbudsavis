@@ -14,6 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Renviron
+        run: echo $'PUSHOVER_APPKEY=${{ secrets.PUSHOVER_APPKEY }}\nPUSHOVER_USERKEY=${{ secrets.PUSHOVER_USERKEY }}' >> Renviron.site
       # - name: Renviron
       #   run: echo $'PUSHOVER_APPKEY=${{ secrets.PUSHOVER_APPKEY }}\nPUSHOVER_USERKEY=${{ secrets.PUSHOVER_USERKEY }}\CHATGPTAPIKEY=${{ secrets.CHATGPTAPIKEY }}' >> Renviron.site
       - name: Render Book from Action
