@@ -201,7 +201,7 @@ df_etilbudsavisen %>% filter(keyword %in% c("kaffe","starbucks")) %>%  arrange(p
 
 ```{r}
 pushoverr_string = df_etilbudsavisen %>% 
-  filter(keyword %in% c("skyr","tun","sodavand","oksekød","starbucks"),
+  filter(keyword %in% c("skyr","tun","sodavand","pepsi","cola"),
          name_full %in% c("Coop365","Kvickly","Meny","Netto","føtex","Rema 1000","Bilka")) %>% 
   dplyr::select(name,heading,price,size) %>% 
   group_by(name) %>% 
@@ -211,7 +211,7 @@ pushoverr_string = df_etilbudsavisen %>%
   dplyr::select(name,text) %>% 
   distinct() %>% 
   ungroup() %>% 
-  unite(name,name,text,sep = ":\n") %>% 
+  unite(name,name_full,text,sep = ":\n") %>% 
   pull(name) %>% 
   paste0(.,collapse="\n")
 # nchar(pushoverr_string)
