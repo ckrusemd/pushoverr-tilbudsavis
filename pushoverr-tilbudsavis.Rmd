@@ -12,7 +12,7 @@ knitr::opts_chunk$set(echo = FALSE,message = FALSE,warning = FALSE)
 options(scipen=999)
 ```
 
-# Tilbudsavis - ChatGPT Prompts
+# Tilbudsavis
 
 ```{r}
 
@@ -89,10 +89,14 @@ df_etilbudsavisen = do.call("rbind",lapply(keywords,function (keyword) {
   api_json = rawToChar(api_result$content)
   result = jsonlite::fromJSON(api_json)
   
+  images_ = data.frame(images=result$images$zoom)
+  
   temp_df = result %>% 
     dplyr::select(heading,description,run_from,run_till,pricing) %>% 
     unnest_wider(pricing) %>% 
-    dplyr::select(-pre_price,-currency) 
+    dplyr::select(-pre_price,-currency) %>% 
+    bind_cols(images_) %>% 
+    dplyr::mutate(images=paste0("<img src='",images,"' height='200' width='200'></img>"))
   
   dealer_dictionary = result$dealer %>% dplyr::select(name) 
   quantity_dictionary_unit = result$quantity$unit$symbol
@@ -145,7 +149,7 @@ df_etilbudsavisen = do.call("rbind",lapply(keywords,function (keyword) {
 ## All
 
 ```{r}
-df_etilbudsavisen %>% DT::datatable(.,filter="top")
+df_etilbudsavisen %>% DT::datatable(.,filter="top",escape=FALSE)
 ```
 
 ```{r}
