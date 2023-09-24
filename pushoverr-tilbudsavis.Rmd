@@ -156,18 +156,28 @@ df_etilbudsavisen %>% DT::datatable(.,filter="top",escape=FALSE)
 openxlsx::write.xlsx(x = df_etilbudsavisen,file = "_book/df_etilbudsavisen.xlsx")
 ```
 
+```{r}
+show_tilbud = function(data) {
+data %>% 
+    dplyr::select(heading,description,run_from,run_till,price,price_per_kg,name_full,images) %>% 
+    DT::datatable(.,filter="top",escape=FALSE) %>%
+    DT::formatStyle(columns = colnames(.), fontSize = '50%')
+  
+}
+```
+
 ## Centers
 
 ### Bilka
 
 ```{r}
-df_etilbudsavisen %>% filter(keyword=="bilka") %>% arrange(heading) %>%   DT::datatable(.,filter="top",escape=FALSE)
+df_etilbudsavisen %>% filter(keyword=="bilka") %>% arrange(heading) %>% show_tilbud(.)
 ```
 
 ### Netto
 
 ```{r}
-df_etilbudsavisen %>% filter(keyword=="netto") %>% arrange(heading) %>%   DT::datatable(.,filter="top",escape=FALSE)
+df_etilbudsavisen %>% filter(keyword=="netto") %>% arrange(heading) %>% show_tilbud(.)
 ```
 
 ### Rema 1000
