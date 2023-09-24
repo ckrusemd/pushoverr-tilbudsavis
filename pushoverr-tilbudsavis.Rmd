@@ -151,7 +151,7 @@ df_etilbudsavisen = do.call("rbind",lapply(keywords,function (keyword) {
 show_tilbud = function(data) {
 data %>% 
     dplyr::select(heading,description,run_from,run_till,price,price_per_kg,name_full,images) %>% 
-    show_tilbud(.) %>%
+    DT::datatable(.,filter="top",escape=FALSE) %>%
     formatStyle(columns = c("images"), width='300px')
   
 }
