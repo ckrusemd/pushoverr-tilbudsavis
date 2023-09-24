@@ -96,7 +96,7 @@ df_etilbudsavisen = do.call("rbind",lapply(keywords,function (keyword) {
     unnest_wider(pricing) %>% 
     dplyr::select(-pre_price,-currency) %>% 
     bind_cols(images_) %>% 
-    dplyr::mutate(images=paste0("<img src='",images,"' height='200' width='200'></img>"))
+    dplyr::mutate(images=paste0("<img src='",images,"' height='300' width='300'></img>"))
   
   dealer_dictionary = result$dealer %>% dplyr::select(name) 
   quantity_dictionary_unit = result$quantity$unit$symbol
@@ -117,6 +117,7 @@ df_etilbudsavisen = do.call("rbind",lapply(keywords,function (keyword) {
                               "Netto"="N",
                               "Irma"="I",
                               "Coop365"="C",
+                              "365discount"="C",
                               "MENY"="M",
                               "SuperBrugsen"="SB",
                               "Kvickly"="K",
@@ -146,25 +147,27 @@ df_etilbudsavisen = do.call("rbind",lapply(keywords,function (keyword) {
   df_etilbudsavisen
 ```
 
+```{r}
+show_tilbud = function(data) {
+data %>% 
+    dplyr::select(heading,description,run_from,run_till,price,price_per_kg,name_full,images) %>% 
+    show_tilbud(.) %>%
+    formatStyle(columns = c("images"), width='300px')
+  
+}
+```
+
 ## All
 
 ```{r}
-df_etilbudsavisen %>% DT::datatable(.,filter="top",escape=FALSE)
+df_etilbudsavisen %>% show_tilbud(.)
 ```
 
 ```{r}
 openxlsx::write.xlsx(x = df_etilbudsavisen,file = "_book/df_etilbudsavisen.xlsx")
 ```
 
-```{r}
-show_tilbud = function(data) {
-data %>% 
-    dplyr::select(heading,description,run_from,run_till,price,price_per_kg,name_full,images) %>% 
-    DT::datatable(.,filter="top",escape=FALSE) %>%
-    DT::formatStyle(columns = colnames(.), fontSize = '50%')
-  
-}
-```
+
 
 ## Centers
 
@@ -183,25 +186,25 @@ df_etilbudsavisen %>% filter(keyword=="netto") %>% arrange(heading) %>% show_til
 ### Rema 1000
 
 ```{r}
-df_etilbudsavisen %>% filter(keyword=="rema") %>% arrange(heading) %>%   DT::datatable(.,filter="top",escape=FALSE)
+df_etilbudsavisen %>% filter(keyword=="rema") %>% arrange(heading) %>%   show_tilbud(.)
 ```
 
 ### Coop365
 
 ```{r}
-df_etilbudsavisen %>% filter(keyword=="coop") %>% arrange(heading) %>%   DT::datatable(.,filter="top",escape=FALSE)
+df_etilbudsavisen %>% filter(keyword=="coop") %>% arrange(heading) %>%   show_tilbud(.)
 ```
 
 ### Meny
 
 ```{r}
-df_etilbudsavisen %>% filter(keyword=="meny") %>% arrange(heading) %>%   DT::datatable(.,filter="top",escape=FALSE)
+df_etilbudsavisen %>% filter(keyword=="meny") %>% arrange(heading) %>%   show_tilbud(.)
 ```
 
 ### Harald Nyborg
 
 ```{r}
-df_etilbudsavisen %>% filter(keyword=="nyborg") %>% arrange(heading) %>%   DT::datatable(.,filter="top",escape=FALSE)
+df_etilbudsavisen %>% filter(keyword=="nyborg") %>% arrange(heading) %>%   show_tilbud(.)
 ```
 
 ## By subject
@@ -209,71 +212,71 @@ df_etilbudsavisen %>% filter(keyword=="nyborg") %>% arrange(heading) %>%   DT::d
 ### Skyr
 
 ```{r}
-df_etilbudsavisen %>% filter(keyword=="skyr") %>% arrange(price_per_kg) %>%   DT::datatable(.,filter="top",escape=FALSE)
+df_etilbudsavisen %>% filter(keyword=="skyr") %>% arrange(price_per_kg) %>%   show_tilbud(.)
 ```
 
 ### Oksekød
 
 ```{r}
-df_etilbudsavisen %>% filter(keyword=="oksekød") %>% arrange(price_per_kg) %>%  DT::datatable(.,filter="top",escape=FALSE)
+df_etilbudsavisen %>% filter(keyword=="oksekød") %>% arrange(price_per_kg) %>%  show_tilbud(.)
 ```
 ### Neutral
 
 ```{r}
-df_etilbudsavisen %>% filter(keyword %in% c("neutral")) %>%  arrange(price_per_kg) %>% DT::datatable(.,filter="top",escape=FALSE)
+df_etilbudsavisen %>% filter(keyword %in% c("neutral")) %>%  arrange(price_per_kg) %>% show_tilbud(.)
 ```
 ### Tabs
 
 ```{r}
-df_etilbudsavisen %>% filter(keyword %in% c("tabs")) %>%  arrange(price_per_kg) %>% DT::datatable(.,filter="top",escape=FALSE)
+df_etilbudsavisen %>% filter(keyword %in% c("tabs")) %>%  arrange(price_per_kg) %>% show_tilbud(.)
 ```
 
 ### Tun
 
 ```{r}
-df_etilbudsavisen %>% filter(keyword %in% c("tun")) %>%  arrange(price_per_kg) %>% DT::datatable(.,filter="top",escape=FALSE)
+df_etilbudsavisen %>% filter(keyword %in% c("tun")) %>%  arrange(price_per_kg) %>% show_tilbud(.)
 ```
 
 ### Slik
 
 ```{r}
-df_etilbudsavisen %>% filter(keyword %in% c("slik")) %>%  arrange(price_per_kg) %>% DT::datatable(.,filter="top",escape=FALSE)
+df_etilbudsavisen %>% filter(keyword %in% c("slik")) %>%  arrange(price_per_kg) %>% show_tilbud(.)
 ```
 
 ### Legetøj
 
 ```{r}
-df_etilbudsavisen %>% filter(keyword %in% c("lego","switch","playstation","ps5")) %>%  arrange(price_per_kg) %>% DT::datatable(.,filter="top",escape=FALSE)
+df_etilbudsavisen %>% filter(keyword %in% c("lego","switch","playstation","ps5")) %>%  arrange(price_per_kg) %>% show_tilbud(.)
 ```
 
 ### Sodavand
 
 ```{r}
-df_etilbudsavisen %>% filter(keyword %in% c("cola","pepsi","sodavand")) %>%  arrange(price_per_kg) %>% DT::datatable(.,filter="top",escape=FALSE)
+df_etilbudsavisen %>% filter(keyword %in% c("cola","pepsi","sodavand")) %>%  arrange(price_per_kg) %>% show_tilbud(.)
 ```
 
 ### Kaffe
 
 ```{r}
-df_etilbudsavisen %>% filter(keyword %in% c("kaffe","starbucks")) %>%  arrange(price_per_kg) %>% DT::datatable(.,filter="top",escape=FALSE)
+df_etilbudsavisen %>% filter(keyword %in% c("kaffe","starbucks")) %>%  arrange(price_per_kg) %>% show_tilbud(.)
 ```
 
 ### Vitaminer
 
 ```{r}
-df_etilbudsavisen %>% filter(keyword %in% c("kaffe","starbucks")) %>%  arrange(price_per_kg) %>% DT::datatable(.,filter="top",escape=FALSE)
+df_etilbudsavisen %>% filter(keyword %in% c("vitamin")) %>%  arrange(price_per_kg) %>% show_tilbud(.)
 ```
 
 ### Burger
 
 ```{r}
-df_etilbudsavisen %>% filter(keyword %in% c("burger")) %>%  arrange(price_per_kg) %>% DT::datatable(.,filter="top",escape=FALSE)
+df_etilbudsavisen %>% filter(keyword %in% c("burger")) %>%  arrange(price_per_kg) %>% show_tilbud(.)
 ```
 
 ### Pølser
 
 ```{r}
-df_etilbudsavisen %>% filter(keyword %in% c("pølser")) %>%  arrange(price_per_kg) %>% DT::datatable(.,filter="top",escape=FALSE)
+df_etilbudsavisen %>% filter(keyword %in% c("pølser")) %>%  arrange(price_per_kg) %>% show_tilbud(.)
 ```
 
 ## Pushoverr
@@ -281,7 +284,7 @@ df_etilbudsavisen %>% filter(keyword %in% c("pølser")) %>%  arrange(price_per_k
 ```{r}
 pushoverr_string = df_etilbudsavisen %>% 
   filter(keyword %in% c("skyr","tun","sodavand","pepsi","cola"),
-         name_full %in% c("Coop365","Kvickly","Meny","Netto","føtex","Rema 1000","Bilka")) %>% 
+         name_full %in% c("365discount","Coop365","Kvickly","Meny","Netto","føtex","Rema 1000","Bilka")) %>% 
   dplyr::select(name,heading,price,size) %>% 
   distinct() %>% 
   group_by(name) %>% 
