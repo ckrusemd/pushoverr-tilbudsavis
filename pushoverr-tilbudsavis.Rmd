@@ -358,6 +358,7 @@ pushoverr_string_first = df_etilbudsavisen %>%
   pull(name_full) %>% 
   paste0(.,collapse="\n") %>% 
   paste0("First day:\n",.)
+pushoverr_string_first = substr(pushoverr_string_first,start = 1,500)
 
 pushoverr_string_last = df_etilbudsavisen %>% 
   filter(run_till==Sys.Date()) %>% 
@@ -376,6 +377,7 @@ pushoverr_string_last = df_etilbudsavisen %>%
   pull(name_full) %>% 
   paste0(.,collapse="\n") %>% 
   paste0("Last day:\n",.)
+pushoverr_string_last = substr(pushoverr_string_first,start = 1,500)
 
 pushoverr::pushover(paste0(pushoverr_string_first,"\n\n",pushoverr_string_last))
 ```
