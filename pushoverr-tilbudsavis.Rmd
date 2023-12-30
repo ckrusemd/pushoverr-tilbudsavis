@@ -42,7 +42,10 @@ pushoverr::set_pushover_user(user = Sys.getenv("PUSHOVER_USERKEY"))
 ```{r}
 
 keywords = c("skyr",
+             "harald",
+             "jem",
              "yoghurt",
+             "plast",
              "bilka",
              "rema",
              "coop",
@@ -62,6 +65,7 @@ keywords = c("skyr",
              "vitamin",
              "legetøj",
              "switch",
+             "cult",
              "playstation",
              "tabs",
              "ps5",
@@ -77,8 +81,18 @@ keywords = c("skyr",
              "vitamin",
              "smør",
              "starbucks",
+             "marcipan",
+             "lego",
+             "melis",
+             "sukker",
+             "sæbe",
+             "spinat",
+             "monster",
+             "bull",
              "farin",
              "mel",
+             "flytte",
+             "pap",
              "krydderi",
              "burger"
              )
@@ -166,7 +180,7 @@ data %>%
 df_etilbudsavisen %>% show_tilbud(.)
 ```
 
-```{r}
+```{r eval=F}
 openxlsx::write.xlsx(x = df_etilbudsavisen,file = "_book/df_etilbudsavisen.xlsx")
 ```
 
@@ -205,7 +219,12 @@ df_etilbudsavisen %>% filter(keyword=="meny") %>% arrange(heading) %>%   show_ti
 ## Harald Nyborg
 
 ```{r}
-df_etilbudsavisen %>% filter(keyword=="nyborg") %>% arrange(heading) %>%   show_tilbud(.)
+df_etilbudsavisen %>% filter(name_full %in% c("jem & fix","Harald Nyborg")) %>% arrange(heading) %>%   show_tilbud(.)
+```
+## BR
+
+```{r}
+df_etilbudsavisen %>% filter(name_full %in% c("BR")) %>% arrange(heading) %>%   show_tilbud(.)
 ```
 
 # By subject
@@ -310,6 +329,42 @@ df_etilbudsavisen %>% filter(keyword %in% c("sukker")) %>%  arrange(price_per_kg
 
 ```{r}
 df_etilbudsavisen %>% filter(keyword %in% c("mel")) %>%  arrange(price_per_kg) %>% show_tilbud(.)
+```
+
+## Spinat
+
+```{r}
+df_etilbudsavisen %>% filter(grepl("SPINAT|GRØN|HARICOT",toupper(heading))) %>% show_tilbud(.)
+```
+
+## Melis
+
+```{r}
+df_etilbudsavisen %>% filter(grepl("MELIS",toupper(heading))) %>% show_tilbud(.)
+```
+
+## Energidrik
+
+```{r}
+df_etilbudsavisen %>% filter(grepl("CULT|MONSTER|BULL",toupper(heading))) %>% show_tilbud(.)
+```
+
+## Marcipan
+
+```{r}
+df_etilbudsavisen %>% filter(grepl("ODENSE|MARCIPAN",toupper(heading))) %>% show_tilbud(.)
+```
+
+## Flyttekasser
+
+```{r}
+df_etilbudsavisen %>% filter(grepl("PAP|FLYT|OPBEVARING",toupper(heading))) %>% show_tilbud(.)
+```
+
+## Plast opbevaring
+
+```{r}
+df_etilbudsavisen %>% filter(grepl("MOXOM|PLAST|OPBEVARING",toupper(heading))) %>% show_tilbud(.)
 ```
 
 # Pushoverr
