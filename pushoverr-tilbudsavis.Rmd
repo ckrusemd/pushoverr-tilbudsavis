@@ -106,14 +106,14 @@ df_etilbudsavisen = do.call("rbind",lapply(keywords,function (keyword) {
   api_json = rawToChar(api_result$content)
   result = jsonlite::fromJSON(api_json)
   
-  images_ = data.frame(images=result$images$zoom)
+  images_ = data.frame(images_raw_url=result$images$zoom)
   
   temp_df = result %>% 
     dplyr::select(heading,description,run_from,run_till,pricing) %>% 
     unnest_wider(pricing) %>% 
     dplyr::select(-pre_price,-currency) %>% 
     bind_cols(images_) %>% 
-    dplyr::mutate(images=paste0("<img src='",images,"' height='300' width='300'></img>"))
+    dplyr::mutate(images=paste0("<img src='",images_raw_url,"' height='300' width='300'></img>"))
   
   dealer_dictionary = result$dealer %>% dplyr::select(name) 
   quantity_dictionary_unit = result$quantity$unit$symbol
@@ -172,6 +172,26 @@ data %>%
     formatStyle(columns = c("images"), width='300px')
   
 }
+```
+
+# Launched today
+
+```{r}
+
+tmp_dir = tempdir()
+
+send_out_images = function(row) {
+    message(row$row_)
+    download.file(url = row$images_raw_url,destfile = paste0(tmp_dir,"/",row$row_,".jpg"))
+    pushoverr::pushover(row$name_full,attachment = paste0(tmp_dir,"/",row$row_,".jpg"))
+    return(data.frame())
+}
+df_etilbudsavisen %>% 
+  filter(run_from==Sys.Date()) %>% 
+  filter(keyword %in% c("skyr","oksekød","tun","cola","pepsi","sodavand","starbucks","smør","switch","playstation","monster")) %>% 
+  dplyr::mutate(row_=row_number()) %>% 
+  group_by(row_) %>% 
+  do(send_out_images(.))
 ```
 
 # All
@@ -391,7 +411,7 @@ pushoverr_string = df_etilbudsavisen %>%
 # cat(pushoverr_string)
 # message(nchar(pushoverr_string))
 pushoverr_string = substr(pushoverr_string,start = 1,1020)
-pushoverr::pushover(pushoverr_string)
+# pushoverr::pushover(pushoverr_string)
 ```
 
 ## First day
@@ -435,6 +455,6 @@ pushoverr_string_last = df_etilbudsavisen %>%
   paste0("Last day:\n",.)
 pushoverr_string_last = substr(pushoverr_string_last,start = 1,500)
 
-pushoverr::pushover(paste0(pushoverr_string_first,"\n\n",pushoverr_string_last))
+# pushoverr::pushover(paste0(pushoverr_string_first,"\n\n",pushoverr_string_last))
 ```
 
