@@ -186,13 +186,19 @@ send_out_images = function(row) {
     pushoverr::pushover(paste0(row$name_full," (Ends: ",format.Date(row$run_till,"%A %b %d"),")"),attachment = paste0(tmp_dir,"/",row$row_,".jpg"))
     return(data.frame())
 }
-df_etilbudsavisen %>% 
+
+df_today = df_etilbudsavisen %>% 
   filter(run_from==Sys.Date()) %>% 
   filter(keyword %in% c("skyr","oksekød","tun","cola","pepsi","sodavand","starbucks","smør","switch","playstation","monster")) %>% 
-  dplyr::mutate(row_=row_number()) %>% 
+  dplyr::mutate(row_=row_number())
+
+if (nrow(df_today)>0) {
+  df_today %>% 
   # filter(row_==1) %>% 
   group_by(row_) %>% 
   do(send_out_images(.))
+}
+
 ```
 
 # All
