@@ -1,0 +1,9 @@
+body .main-container {
+max-width: 500px;
+}
+
+.book .book-body .page-wrapper .page-inner {
+    max-width: 2000px  !important;
+    margin: 0 auto;
+    padding: 20px 0 40px;
+}
